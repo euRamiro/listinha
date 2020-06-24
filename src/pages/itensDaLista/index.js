@@ -1,8 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
-import {View, FlatList, Text, TextInput, TouchableOpacity} from 'react-native';
+import {View, FlatList, Text, TouchableOpacity} from 'react-native';
 import {CheckBox} from 'react-native-elements';
+import NumericInput from 'react-native-numeric-input';
+import {TextInputMask} from 'react-native-masked-text';
 import conexao from '../../database/conexao';
 
 import styles from './styles';
@@ -122,12 +124,12 @@ export default function ItensDaLista({navigation, route}) {
                   </View>
                   <View style={styles.informaQtdeValorInputView}>
                     <Text style={styles.informaQtdeValorInput}>
-                      {item.valor.toFixed(2)}
+                      {item.valor}
                     </Text>
                   </View>
                   <View style={styles.informaQtdeValorInputView}>
                     <Text style={styles.informaQtdeValorInput}>
-                      {item.subTotal.toFixed(2)}
+                      {item.subTotal}
                     </Text>
                   </View>
                 </View>

@@ -5,8 +5,8 @@ export default class ListasSchema {
     properties: {
       id: {type: 'int', indexed: true},
       descricao: 'string',
-      quantidadeItens: {type: 'int', default: 0},
-      total: {type: 'double', default: 0},
+      quantidadeItens: {type: 'int?', default: 0},
+      total: {type: 'double?', default: 0},
     },
   };
 }

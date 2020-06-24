@@ -1,7 +1,11 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {View, Text, TextInput, TouchableOpacity} from 'react-native';
-import InputSpinner from 'react-native-input-spinner';
+import {View, Text, TouchableOpacity} from 'react-native';
+
+import NumericInput from 'react-native-numeric-input';
+import {TextInputMask} from 'react-native-masked-text';
+import {Jiro} from 'react-native-textinput-effects';
+
 import conexao from '../../database/conexao';
 
 import styles from './styles';
@@ -11,8 +15,8 @@ export default function novoItem({navigation, route}) {
   const navegar = useNavigation();
 
   const [produto, setProduto] = useState('');
-  const [quantidade, setQuantidade] = useState('');
-  const [valor, setValor] = useState('');
+  const [quantidade, setQuantidade] = useState(0);
+  const [valor, setValor] = useState(0);
 
   function handleVoltar() {
     navegar.goBack();
@@ -24,7 +28,7 @@ export default function novoItem({navigation, route}) {
       produto,
       quantidade,
       valor,
-      subTotal: quantidade.toFixed(2) * valor.toFixed(2),
+      subTotal: quantidade > 0 && valor > 0 ? quantidade * valor : 0,
     };
     const realm = await conexao();
     var ID =
@@ -65,33 +69,50 @@ export default function novoItem({navigation, route}) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>
-          Adiciona novo produto {listaSelecionada.descricao}
-        </Text>
+        <Text style={styles.headerText}>Adiciona novo item</Text>
+        <Text style={styles.headerTexta}>{listaSelecionada.descricao}</Text>
       </View>
 
       <View style={styles.containerInputs}>
-        <TextInput
-          style={styles.produto}
-          placeholder="Nome do produto"
+        <Jiro
+          label={'Descricção do item'}
+          labelStyle={{fontSize: 18, fontWeight: 'bold'}}
+          borderColor={'#e02041'}
+          inputPadding={20}
+          inputStyle={{color: 'white'}}
           value={produto}
           onChangeText={setProduto}
         />
-        <Text>Quantidade</Text>
-        <InputSpinner
-          value={Number(quantidade).toFixed(2)}
+        <Text style={styles.textInputs}>Quantidade</Text>
+        <NumericInput
+          value={quantidade}
           onChange={setQuantidade}
-          width={200}
-          type="float"
+          minValue={0}
+          maxValue={99}
+          textColor={'#000'}
+          totalWidth={240}
+          totalHeight={40}
+          iconSize={20}
+          step={1}
+          valueType="integer"
+          iconStyle={{color: 'white'}}
+          rightButtonBackgroundColor="#e02041"
+          leftButtonBackgroundColor="#E56B70"
         />
-        <Text>Valor Unitário</Text>
-        <InputSpinner
-          width={200}
-          step={0.1}
-          precision={2}
-          type="float"
-          value={Number(valor).toFixed(2)}
-          onChange={setValor}
+        <Text style={styles.textInputs}>Valor Unitário</Text>
+        <TextInputMask
+          type={'money'}
+          options={{
+            precision: 2,
+            separator: '.',
+            delimiter: ',',
+            unit: 'R$',
+            suffixUnit: '',
+          }}
+          value={valor}
+          onChangeText={setValor}
+          style={styles.valor}
+          placeholder="R$ 0,00"
         />
       </View>
 

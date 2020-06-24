@@ -6,9 +6,9 @@ export default class ItensDaListaSchema {
       id: {type: 'int', indexed: true},
       Lista: {type: 'Listas'},
       produto: 'string',
-      quantidade: 'double',
-      valor: 'double',
-      subTotal: 'double',
+      quantidade: {type: 'int?', default: 0},
+      valor: {type: 'double?', default: 0},
+      subTotal: {type: 'double?', default: 0},
       riscado: {type: 'bool', default: false},
     },
   };

@@ -21,16 +21,21 @@ export default StyleSheet.create({
   containerInputs: {
     flexDirection: 'column',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'stretch',
     borderRadius: 8,
     backgroundColor: '#FFF',
+    paddingBottom: 30,
   },
-  produto: {
-    fontSize: 25,
+  textInputs: {
+    fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
+    marginTop: 15,
+  },
+  valor: {
+    fontSize: 18,
+    fontWeight: 'bold',
     marginTop: 5,
-    marginBottom: 5,
+    marginBottom: 15,
   },
   acoes: {
     marginTop: 35,

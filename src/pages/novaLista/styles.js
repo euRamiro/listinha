@@ -21,14 +21,16 @@ export default StyleSheet.create({
   nomeDaLista: {
     borderRadius: 8,
     backgroundColor: '#FFF',
-    height: 55,
+    height: 100,
     justifyContent: 'center',
   },
   nomeDaListaInput: {
     fontSize: 20,
+    marginBottom: 30,
   },
   acoes: {
-    marginTop: 35,
+    marginTop: 25,
+    marginBottom: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },

@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
 import {useNavigation} from '@react-navigation/native';
-import {View, Text, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, TouchableOpacity} from 'react-native';
 import conexao from '../../database/conexao';
 import novaLista from '../../database/schemas/listasSchema';
+import {Jiro} from 'react-native-textinput-effects';
 
 import styles from './styles';
 
@@ -39,9 +40,12 @@ export default function NovaLista() {
         <Text style={styles.headerText}>Nova lista</Text>
       </View>
       <View style={styles.nomeDaLista}>
-        <TextInput
+        <Jiro
           style={styles.nomeDaListaInput}
-          placeholder="Nome da lista"
+          label={'Nome da lista'}
+          borderColor={'#e02041'}
+          inputPadding={20}
+          inputStyle={{color: 'white'}}
           value={descricao}
           onChangeText={setDescricao}
         />
