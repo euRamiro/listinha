@@ -12,12 +12,3 @@ import Routes from './src/routes';
 export default function App() {
   return <Routes />;
 }
-// const App: () => React$Node = () => {
-//   return (
-//     <>
-//       <Routes />
-//     </>
-//   );
-// };
-
-// export default App;

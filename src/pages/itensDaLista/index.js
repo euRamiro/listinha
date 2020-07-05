@@ -3,8 +3,6 @@ import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import {View, FlatList, Text, TouchableOpacity} from 'react-native';
 import {CheckBox} from 'react-native-elements';
-import NumericInput from 'react-native-numeric-input';
-import {TextInputMask} from 'react-native-masked-text';
 import conexao from '../../database/conexao';
 
 import styles from './styles';
@@ -32,6 +30,12 @@ export default function ItensDaLista({navigation, route}) {
   function navegarNovoItem() {
     navegar.navigate('NovoItem', {
       listaSelecionada,
+    });
+  }
+  function editarItem(itemSelecionado) {
+    navegar.navigate('NovoItem', {
+      listaSelecionada,
+      itemSelecionado,
     });
   }
   async function removerItem(item) {
@@ -92,6 +96,12 @@ export default function ItensDaLista({navigation, route}) {
             <View id="viewContainer" style={styles.containerItem}>
               <View style={styles.produto}>
                 <Text style={styles.descricaoItem}>{item.produto}</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    editarItem(item);
+                  }}>
+                  <Icon name="edit" size={18} />
+                </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
                     removerItem(item);
