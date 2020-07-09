@@ -1,14 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, Text, TouchableOpacity} from 'react-native';
-import {TextInputMask} from 'react-native-masked-text';
 import {Jiro} from 'react-native-textinput-effects';
 
 import conexao from '../../database/conexao';
 
 import styles from './styles';
 
-export default function novoItem({navigation, route}) {
+export default function novoItem({route}) {
   const {listaSelecionada} = route.params;
   const {itemSelecionado} = route.params || undefined;
   const navegar = useNavigation();
@@ -20,8 +19,8 @@ export default function novoItem({navigation, route}) {
   useEffect(() => {
     if (itemSelecionado) {
       setProduto(itemSelecionado.produto);
-      setQuantidade(itemSelecionado.quantidade);
-      setValor(itemSelecionado.valor);
+      setQuantidade(String(itemSelecionado.quantidade));
+      setValor(String(itemSelecionado.valor));
     }
   }, []);
 
@@ -34,19 +33,22 @@ export default function novoItem({navigation, route}) {
       Lista: listaSelecionada,
       produto,
       quantidade: Number(quantidade),
-      valor: valor,
+      valor: Number(valor),
       subTotal: quantidade * valor,
     };
     try {
       const realm = await conexao();
+      let ID;
+      if (itemSelecionado !== undefined) {
+        novoItem.id = itemSelecionado.id;
+      } else {
+        ID = await realm
+          .objects('ItensDaLista')
+          .filtered('Lista.id == $0', listaSelecionada.id)
+          .max('id');
+        ID > 0 ? (novoItem.id = ID + 1) : (novoItem.id = 1);
+      }
 
-      itemSelecionado !== undefined
-        ? (novoItem.id = itemSelecionado.id)
-        : (novoItem.id =
-            realm
-              .objects('ItensDaLista')
-              .filtered('Lista.id == $0', listaSelecionada.id)
-              .max('id') + 1);
       await realm.write(() => {
         realm.create('ItensDaLista', novoItem, 'modified');
       });
@@ -55,22 +57,32 @@ export default function novoItem({navigation, route}) {
       atualizarTotalDaLista(novoItem);
       handleVoltar();
     } catch (error) {
-      console.log('erro gravar novo item: ' + valor, error);
+      console.log(novoItem);
+      console.log('erro gravar novo item: ', error);
     }
   }
 
   async function atualizarQtdeItensDaLista() {
     const realm = await conexao();
+    let quantidadeItens = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id).length;
+
     await realm.write(() => {
-      listaSelecionada.quantidadeItens = ++listaSelecionada.quantidadeItens;
+      listaSelecionada.quantidadeItens = quantidadeItens;
       realm.create('Listas', listaSelecionada, 'modified');
     });
   }
 
   async function atualizarTotalDaLista(item) {
     const realm = await conexao();
+    let somaSubTotalItens = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id)
+      .sum('subTotal');
+
     await realm.write(() => {
-      listaSelecionada.total = listaSelecionada.total + item.subTotal;
+      listaSelecionada.total = somaSubTotalItens;
       realm.create('Listas', listaSelecionada, 'modified');
     });
   }
@@ -92,10 +104,8 @@ export default function novoItem({navigation, route}) {
           value={produto}
           onChangeText={setProduto}
         />
-
         <Jiro
           keyboardType={'numeric'}
-          returnKeyType={'go'}
           label={'Quantidade'}
           labelStyle={{fontSize: 18, fontWeight: 'bold'}}
           borderColor={'#e02041'}
@@ -104,22 +114,8 @@ export default function novoItem({navigation, route}) {
           value={quantidade}
           onChangeText={setQuantidade}
         />
-        {/* <Text style={styles.textInputs}>Quantidade</Text>
-        <TextInputMask
-          type={'only-numbers'}
-          keyboardType={'number-pad'}
-          options={{
-            precision: 0,
-            suffixUnit: '',
-          }}
-          selectTextOnFocus={true}
-          value={quantidade}
-          onChangeText={setQuantidade}
-          style={styles.quantidade}
-        /> */}
         <Jiro
           keyboardType={'decimal-pad'}
-          returnKeyType={'go'}
           label={'Valor'}
           labelStyle={{fontSize: 18, fontWeight: 'bold'}}
           borderColor={'#e02041'}
@@ -128,20 +124,6 @@ export default function novoItem({navigation, route}) {
           value={valor}
           onChangeText={setValor}
         />
-        {/* <Text style={styles.textInputs}>Valor Unitário</Text>
-        <TextInputMask
-          style={styles.valor}
-          type={'money'}
-          options={{
-            precision: 2,
-            separator: ',',
-            delimiter: '.',
-            unit: 'R$',
-            suffixUnit: '',
-          }}
-          value={valor}
-          onChangeText={setValor}
-        /> */}
       </View>
 
       <View style={styles.acoes}>

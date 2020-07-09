@@ -14,7 +14,7 @@ export default function ItensDaLista({navigation, route}) {
 
   async function carregarItensDaLista() {
     const realm = await conexao();
-    const dados = realm
+    const dados = await realm
       .objects('ItensDaLista')
       .filtered('Lista.id == $0 SORT(riscado ASC)', listaSelecionada.id);
     setItensDaLista(dados);
@@ -31,6 +31,7 @@ export default function ItensDaLista({navigation, route}) {
     navegar.navigate('NovoItem', {
       listaSelecionada,
     });
+    carregarItensDaLista();
   }
   function editarItem(itemSelecionado) {
     navegar.navigate('NovoItem', {
