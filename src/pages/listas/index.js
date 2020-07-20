@@ -44,6 +44,20 @@ export default function Listas({navigation}) {
     });
     //carregarListas();
   }
+
+  async function handleZerarQuantidades(listaSelecionada) {
+    const realm = await conexao();
+    const itens = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0 SORT(riscado ASC)', listaSelecionada.id);
+    await realm.write(() => {
+      itens.forEach((item) => {
+        item.quantidade = 0;
+      });
+      //realm.create('ItensDaLista', item, 'modified');
+    });
+  }
+  function handleZerarValores() {}
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -65,7 +79,6 @@ export default function Listas({navigation}) {
           <Icons name="plus-circle" size={30} color="#e02041" />
         </TouchableOpacity>
       </View>
-
       <FlatList
         style={styles.listas}
         data={listas}

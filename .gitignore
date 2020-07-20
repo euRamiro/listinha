@@ -53,7 +53,6 @@ build/
 .gradle
 local.properties
 *.iml
-/android/
 android/app/build/outputs/*
 *.hprof
 

@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
 import {View, FlatList, Text, TouchableOpacity} from 'react-native';
 import {CheckBox} from 'react-native-elements';
@@ -9,10 +9,43 @@ import styles from './styles';
 
 export default function ItensDaLista({navigation, route}) {
   const navegar = useNavigation();
-  const {listaSelecionada} = route.params;
+  let {listaSelecionada} = route.params;
   const [itensDaLista, setItensDaLista] = useState([]);
 
+  async function atualizarQtdeItensDaLista() {
+    const realm = await conexao();
+    let quantidadeItens = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id).length;
+
+    await realm.write(() => {
+      listaSelecionada.quantidadeItens = quantidadeItens;
+      realm.create('Listas', listaSelecionada, 'modified');
+    });
+  }
+  async function atualizarTotalDaLista() {
+    const realm = await conexao();
+    let somaSubTotalItens = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id)
+      .sum('subTotal');
+
+    await realm.write(() => {
+      listaSelecionada.total = somaSubTotalItens;
+      realm.create('Listas', listaSelecionada, 'modified');
+    });
+  }
+  async function atualizarLista() {
+    atualizarQtdeItensDaLista();
+    atualizarTotalDaLista();
+    const realm = await conexao();
+    const lista = await realm
+      .objects('Listas')
+      .filtered('Lista.id == $0', listaSelecionada.id);
+    listaSelecionada = lista;
+  }
   async function carregarItensDaLista() {
+    atualizarLista();
     const realm = await conexao();
     const dados = await realm
       .objects('ItensDaLista')
@@ -22,7 +55,11 @@ export default function ItensDaLista({navigation, route}) {
 
   useEffect(() => {
     carregarItensDaLista();
-  }, [listaSelecionada]);
+  }, []);
+
+  useIsFocused(() => {
+    carregarItensDaLista();
+  });
 
   function navegarVoltar() {
     navegar.goBack();
@@ -31,7 +68,6 @@ export default function ItensDaLista({navigation, route}) {
     navegar.navigate('NovoItem', {
       listaSelecionada,
     });
-    carregarItensDaLista();
   }
   function editarItem(itemSelecionado) {
     navegar.navigate('NovoItem', {
@@ -39,8 +75,8 @@ export default function ItensDaLista({navigation, route}) {
       itemSelecionado,
     });
   }
+
   async function removerItem(item) {
-    await atualizarTotalDaLista(item);
     const realm = await conexao();
     realm.write(() => {
       const itemExluir = realm
@@ -48,23 +84,9 @@ export default function ItensDaLista({navigation, route}) {
         .filtered('id == $0', item.id);
       realm.delete(itemExluir);
     });
-    atualizarQtdeItensDaLista();
     carregarItensDaLista();
   }
-  async function atualizarQtdeItensDaLista() {
-    const realm = await conexao();
-    await realm.write(() => {
-      listaSelecionada.quantidadeItens = --listaSelecionada.quantidadeItens;
-      realm.create('Listas', listaSelecionada, 'modified');
-    });
-  }
-  async function atualizarTotalDaLista(item) {
-    const realm = await conexao();
-    await realm.write(() => {
-      listaSelecionada.total = listaSelecionada.total - item.subTotal;
-      realm.create('Listas', listaSelecionada, 'modified');
-    });
-  }
+
   async function riscarItem(item) {
     const realm = await conexao();
     await realm.write(() => {
@@ -140,7 +162,7 @@ export default function ItensDaLista({navigation, route}) {
                   </View>
                   <View style={styles.informaQtdeValorInputView}>
                     <Text style={styles.informaQtdeValorInput}>
-                      {item.subTotal}
+                      {item.subTotal.toFixed(2)}
                     </Text>
                   </View>
                 </View>
