@@ -16,7 +16,15 @@
     "**/*"
   ],
   "ios": {
-    "supportsTablet": true
+    "supportsTablet": true,
+    "config": {
+      "googleMobileAdsAppId": "ca-app-pub-8374324571031415/1519150634"
+    }
+  },
+  "android": {
+    "config": {
+      "googleMobileAdsAppId": "ca-app-pub-8374324571031415/1519150634"
+    }
   },
   "description": ""
 }

@@ -3,6 +3,7 @@ import Icons from 'react-native-vector-icons/Feather';
 import {useNavigation} from '@react-navigation/native';
 import {View, FlatList, Text, Image, TouchableOpacity} from 'react-native';
 import conexao from '../../database/conexao';
+import {AdMobBanner, setTestDeviceAsync} from 'react-native-admob';
 
 import logoImg from '../../assets/logo.png';
 import styles from './styles';
@@ -118,6 +119,15 @@ export default function Listas({navigation}) {
           );
         }}
       />
+      <View style={styles.bannerAds}>
+        <AdMobBanner
+          adSize="fullBanner"
+          adUnitID="ca-app-pub-8374324571031415/1519150634"
+          onAdFailedToLoad={(err) => {
+            console.log(err);
+          }}
+        />
+      </View>
     </View>
   );
 }

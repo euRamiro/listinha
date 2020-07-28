@@ -90,4 +90,15 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  bannerAds: {
+    position: 'absolute',
+    flex: 1,
+    left: 0,
+    right: 0,
+    bottom: -10,
+    flexDirection: 'row',
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
