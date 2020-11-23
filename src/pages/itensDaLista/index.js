@@ -49,7 +49,10 @@ export default function ItensDaLista({navigation, route}) {
     const realm = await conexao();
     const dados = await realm
       .objects('ItensDaLista')
-      .filtered('Lista.id == $0 SORT(riscado ASC)', listaSelecionada.id);
+      .filtered(
+        'Lista.id == $0 SORT(riscado ASC, produto ASC, categoria ASC)',
+        listaSelecionada.id,
+      );
     setItensDaLista(dados);
   }
 

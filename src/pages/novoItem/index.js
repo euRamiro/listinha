@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {Jiro} from 'react-native-textinput-effects';
+import Icon from 'react-native-vector-icons/Feather';
+import {Picker} from '@react-native-community/picker';
 
 import conexao from '../../database/conexao';
 
@@ -16,12 +18,22 @@ export default function novoItem({route}) {
   const [quantidade, setQuantidade] = useState(0);
   const [valor, setValor] = useState(0);
 
+  const [categoriasList, setCategoriasList] = useState([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+
+  async function carregarCategorias() {
+    const realm = await conexao();
+    const data = await realm.objects('Categoria').sorted('descricao', false);
+    setCategoriasList(data);
+  }
+
   useEffect(() => {
     if (itemSelecionado) {
       setProduto(itemSelecionado.produto);
       setQuantidade(String(itemSelecionado.quantidade));
       setValor(String(itemSelecionado.valor));
     }
+    carregarCategorias();
   }, []);
 
   function handleVoltar() {
@@ -32,6 +44,7 @@ export default function novoItem({route}) {
     const novoItem = {
       Lista: listaSelecionada,
       produto,
+      categoria: categoriaSelecionada,
       quantidade: Number(quantidade),
       valor: Number(valor),
       subTotal: quantidade * valor,
@@ -60,6 +73,10 @@ export default function novoItem({route}) {
       console.log(novoItem);
       console.log('erro gravar novo item: ', error);
     }
+  }
+
+  function navegarNovaCategoria() {
+    navegar.navigate('Categoria');
   }
 
   async function atualizarQtdeItensDaLista() {
@@ -91,7 +108,7 @@ export default function novoItem({route}) {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Adiciona novo item</Text>
-        <Text style={styles.headerTexta}>{listaSelecionada.descricao}</Text>
+        <Text style={styles.headerText}>{listaSelecionada.descricao}</Text>
       </View>
 
       <View style={styles.containerInputs}>
@@ -104,6 +121,35 @@ export default function novoItem({route}) {
           value={produto}
           onChangeText={setProduto}
         />
+        <View>
+          <Text style={styles.headerText}>Categoria</Text>
+          <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
+            <Picker
+              style={{height: 50, width: '60%'}}
+              selectedValue={categoriaSelecionada}
+              onValueChange={(itemValue, itemIndex) =>
+                setCategoriaSelecionada({PickerValue: itemValue})
+              }>
+              {categoriasList !== '' ? (
+                categoriasList.map((categoria, indice) => {
+                  return (
+                    <Picker.Item
+                      key={categoria.id}
+                      label={categoria.descricao}
+                      value={categoria}
+                    />
+                  );
+                })
+              ) : (
+                <Picker.Item label="cadastre categorias" value="0" />
+              )}
+            </Picker>
+
+            <TouchableOpacity onPress={navegarNovaCategoria}>
+              <Icon name="plus-circle" size={20} color="#e02041" />
+            </TouchableOpacity>
+          </View>
+        </View>
         <Jiro
           keyboardType={'numeric'}
           label={'Quantidade'}

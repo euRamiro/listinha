@@ -10,6 +10,7 @@ export default class ItensDaListaSchema {
       valor: {type: 'double?', default: 0},
       subTotal: {type: 'double?', default: 0},
       riscado: {type: 'bool', default: false},
+      categoria: {type: 'Categoria'},
     },
   };
 }

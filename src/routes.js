@@ -8,6 +8,7 @@ import Listas from './pages/listas';
 import NovaLista from './pages/novaLista';
 import ItensDaLista from './pages/itensDaLista';
 import NovoItem from './pages/novoItem';
+import Categoria from './pages/categoria';
 
 export default function Routes() {
   return (
@@ -19,6 +20,7 @@ export default function Routes() {
         <AppStack.Screen name="NovaLista" component={NovaLista} />
         <AppStack.Screen name="ItensDaLista" component={ItensDaLista} />
         <AppStack.Screen name="NovoItem" component={NovoItem} />
+        <AppStack.Screen name="Categoria" component={Categoria} />
       </AppStack.Navigator>
     </NavigationContainer>
   );
