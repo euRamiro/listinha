@@ -3,7 +3,7 @@ import {useNavigation} from '@react-navigation/native';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {Jiro} from 'react-native-textinput-effects';
 import Icon from 'react-native-vector-icons/Feather';
-import {Picker} from '@react-native-community/picker';
+import {Picker} from '@react-native-picker/picker';
 
 import conexao from '../../database/conexao';
 
@@ -42,13 +42,14 @@ export default function novoItem({route}) {
 
   async function handleGravar() {
     const novoItem = {
-      Lista: listaSelecionada,
+      Lista: listaSelecionada.id,
       produto,
-      categoria: categoriaSelecionada,
+      categoria: 1,
       quantidade: Number(quantidade),
       valor: Number(valor),
       subTotal: quantidade * valor,
     };
+
     try {
       const realm = await conexao();
       let ID;
@@ -127,19 +128,17 @@ export default function novoItem({route}) {
             <Picker
               style={{height: 50, width: '60%'}}
               selectedValue={categoriaSelecionada}
-              onValueChange={(itemValue, itemIndex) =>
-                setCategoriaSelecionada({PickerValue: itemValue})
-              }>
+              onValueChange={categoriaSelecionada => setCategoriaSelecionada(categoriaSelecionada)} >
               {categoriasList !== '' ? (
-                categoriasList.map((categoria, indice) => {
-                  return (
-                    <Picker.Item
-                      key={categoria.id}
-                      label={categoria.descricao}
-                      value={categoria}
-                    />
-                  );
-                })
+                categoriasList.map(categoria => (
+                  <Picker.Item 
+                    key={categoria.id}
+                    label={categoria.descricao}
+                    value={categoria.id}
+                  />
+                )
+                  
+                  )
               ) : (
                 <Picker.Item label="cadastre categorias" value="0" />
               )}
