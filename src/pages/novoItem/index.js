@@ -32,6 +32,8 @@ export default function novoItem({route}) {
       setProduto(itemSelecionado.produto);
       setQuantidade(String(itemSelecionado.quantidade));
       setValor(String(itemSelecionado.valor));
+      console.log(String(itemSelecionado.categoria));
+      setCategoriaSelecionada(Number(itemSelecionado.categoria))
     }
     carregarCategorias();
   }, []);
@@ -42,9 +44,9 @@ export default function novoItem({route}) {
 
   async function handleGravar() {
     const novoItem = {
-      Lista: listaSelecionada.id,
+      Lista: listaSelecionada,
       produto,
-      categoria: 1,
+      categoria: {id:categoriaSelecionada},
       quantidade: Number(quantidade),
       valor: Number(valor),
       subTotal: quantidade * valor,
@@ -131,11 +133,11 @@ export default function novoItem({route}) {
               onValueChange={categoriaSelecionada => setCategoriaSelecionada(categoriaSelecionada)} >
               {categoriasList !== '' ? (
                 categoriasList.map(categoria => (
-                  <Picker.Item 
-                    key={categoria.id}
-                    label={categoria.descricao}
-                    value={categoria.id}
-                  />
+                    <Picker.Item 
+                      key={categoria.id}
+                      label={categoria.descricao}
+                      value={categoria.id}
+                    />
                 )
                   
                   )
