@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {Jiro} from 'react-native-textinput-effects';
 import Icon from 'react-native-vector-icons/Feather';
@@ -19,7 +19,7 @@ export default function novoItem({route}) {
   const [valor, setValor] = useState(0);
 
   const [categoriasList, setCategoriasList] = useState([]);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(1);
 
   async function carregarCategorias() {
     const realm = await conexao();
@@ -32,11 +32,14 @@ export default function novoItem({route}) {
       setProduto(itemSelecionado.produto);
       setQuantidade(String(itemSelecionado.quantidade));
       setValor(String(itemSelecionado.valor));
-      console.log(String(itemSelecionado.categoria));
       setCategoriaSelecionada(Number(itemSelecionado.categoria))
     }
     carregarCategorias();
   }, []);
+
+  useIsFocused(() => {
+    carregarCategorias();
+  })
 
   function handleVoltar() {
     navegar.goBack();
@@ -46,7 +49,7 @@ export default function novoItem({route}) {
     const novoItem = {
       Lista: listaSelecionada,
       produto,
-      categoria: {id:categoriaSelecionada},
+      categoria: Number(categoriaSelecionada),
       quantidade: Number(quantidade),
       valor: Number(valor),
       subTotal: quantidade * valor,
@@ -130,7 +133,8 @@ export default function novoItem({route}) {
             <Picker
               style={{height: 50, width: '60%'}}
               selectedValue={categoriaSelecionada}
-              onValueChange={categoriaSelecionada => setCategoriaSelecionada(categoriaSelecionada)} >
+              onValueChange={(itemValue, itemIndex) =>
+                setCategoriaSelecionada(Number(itemValue))} >
               {categoriasList !== '' ? (
                 categoriasList.map(categoria => (
                     <Picker.Item 

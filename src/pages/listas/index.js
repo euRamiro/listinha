@@ -16,10 +16,34 @@ export default function Listas({navigation}) {
     const realm = await conexao();
     const data = await realm.objects('Listas').sorted('id', false);
     setListas(data);
+    addCategorias();    
+  }
+
+  async function addCategorias() {
+    const realm = await conexao();
+    const CategoriasList = await realm.objects('Categoria');
+    if (CategoriasList.length < 2) {
+      let objs = [
+        {id: 1, descricao: 'Mercearia'},
+        {id: 2, descricao: 'Bebidas'},
+        {id: 3, descricao: 'Carnes'},
+        {id: 4, descricao: 'Frios'},
+        {id: 5, descricao: 'Frutas e verduras'},
+        {id: 6, descricao: 'Higiêne pessoal'},
+        {id: 7, descricao: 'Limpeza'},
+        {id: 8, descricao: 'Saúde e beleza'},
+        {id: 9, descricao: 'Diversos'},
+      ];
+      realm.write(() => {
+        objs.forEach((obj) => {
+          realm.create('Categoria', obj);
+        });
+      });
+    }
   }
 
   useEffect(() => {
-    carregarListas();
+    carregarListas();    
   }, [listas]);
 
   function navegarParaItensDaLista(listaSelecionada) {
@@ -46,19 +70,6 @@ export default function Listas({navigation}) {
     //carregarListas();
   }
 
-  async function handleZerarQuantidades(listaSelecionada) {
-    const realm = await conexao();
-    const itens = await realm
-      .objects('ItensDaLista')
-      .filtered('Lista.id == $0 SORT(riscado ASC)', listaSelecionada.id);
-    await realm.write(() => {
-      itens.forEach((item) => {
-        item.quantidade = 0;
-      });
-      //realm.create('ItensDaLista', item, 'modified');
-    });
-  }
-  function handleZerarValores() {}
   return (
     <View style={styles.container}>
       <View style={styles.header}>

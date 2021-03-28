@@ -1,9 +1,17 @@
 import React, {useState, useEffect} from 'react';
 import {useNavigation, useIsFocused} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Feather';
-import {View, FlatList, Text, TouchableOpacity} from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  FlatList,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import {CheckBox} from 'react-native-elements';
 import conexao from '../../database/conexao';
+import {Picker} from '@react-native-picker/picker';
+import PopUp from '../../components/popUpMenu';
 
 import styles from './styles';
 
@@ -12,6 +20,16 @@ export default function ItensDaLista({navigation, route}) {
   let {listaSelecionada} = route.params;
   const [itensDaLista, setItensDaLista] = useState([]);
 
+  const [categoriasList, setCategoriasList] = useState([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+
+  async function carregarCategorias() {
+    const realm = await conexao();
+    const data = await realm.objects('Categoria').sorted('descricao', false);
+
+    setCategoriasList([{id: 999, descricao: 'Todos'}, ...data]);
+  }
+
   async function atualizarQtdeItensDaLista() {
     const realm = await conexao();
     let quantidadeItens = await realm
@@ -19,7 +37,7 @@ export default function ItensDaLista({navigation, route}) {
       .filtered('Lista.id == $0', listaSelecionada.id).length;
 
     await realm.write(() => {
-      listaSelecionada.quantidadeItens = quantidadeItens;
+      listaSelecionada.quantidadeItens = Number(quantidadeItens);
       realm.create('Listas', listaSelecionada, 'modified');
     });
   }
@@ -31,7 +49,7 @@ export default function ItensDaLista({navigation, route}) {
       .sum('subTotal');
 
     await realm.write(() => {
-      listaSelecionada.total = somaSubTotalItens;
+      listaSelecionada.total = Number(somaSubTotalItens);
       realm.create('Listas', listaSelecionada, 'modified');
     });
   }
@@ -41,7 +59,7 @@ export default function ItensDaLista({navigation, route}) {
     const realm = await conexao();
     const lista = await realm
       .objects('Listas')
-      .filtered('Lista.id == $0', listaSelecionada.id);
+      .filtered('id == $0', listaSelecionada.id);
     listaSelecionada = lista;
   }
   async function carregarItensDaLista() {
@@ -50,19 +68,32 @@ export default function ItensDaLista({navigation, route}) {
     const dados = await realm
       .objects('ItensDaLista')
       .filtered(
-        'Lista.id == $0 SORT(riscado ASC, produto ASC, categoria ASC)',
+        'Lista.id == $0 SORT(riscado ASC, categoria ASC, produto ASC)',
         listaSelecionada.id,
       );
-    setItensDaLista(dados);
+    if (categoriaSelecionada == 999) {
+      setItensDaLista(dados);
+    } else {
+      const dadosFiltro = dados.filtered(
+        'categoria == $0',
+        categoriaSelecionada,
+      );
+      setItensDaLista(dadosFiltro);
+    }
   }
 
   useEffect(() => {
     carregarItensDaLista();
+    carregarCategorias();
   }, []);
 
-  useIsFocused(() => {
+  useEffect(() => {
     carregarItensDaLista();
-  });
+  }, [categoriaSelecionada]);
+
+  useIsFocused(() => {
+    carregarCategorias();
+  })
 
   function navegarVoltar() {
     navegar.goBack();
@@ -98,8 +129,67 @@ export default function ItensDaLista({navigation, route}) {
     });
     carregarItensDaLista();
   }
+
+  async function zerarQuantidades() {
+    const realm = await conexao();
+    const itensDaLista = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id);
+    await realm.write(() => {
+      for (let i = 0, len = itensDaLista.length; i < len; i++) {
+        itensDaLista[i].quantidade = 0;
+      }
+    });
+    atualizarLista();
+    carregarItensDaLista();
+  }
+
+  async function zerarValores() {
+    const realm = await conexao();
+    const itensDaLista = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id);
+    await realm.write(() => {
+      for (let i = 0, len = itensDaLista.length; i < len; i++) {
+        itensDaLista[i].valor = 0;
+        itensDaLista[i].subTotal = 0;
+      }
+    });
+    atualizarLista();
+    carregarItensDaLista();
+  }
+
+  async function desmarcarTodos() {
+    const realm = await conexao();
+    const itensDaLista = await realm
+      .objects('ItensDaLista')
+      .filtered('Lista.id == $0', listaSelecionada.id);
+    await realm.write(() => {
+      for (let i = 0, len = itensDaLista.length; i < len; i++) {
+        itensDaLista[i].riscado = false;
+      }
+    });
+    atualizarLista();
+    carregarItensDaLista();
+  }
+
+  const onPopupEvent = (eventName, index) => {
+    if (eventName !== 'itemSelected') {
+      return;
+    }
+    if (index === 0) {
+      zerarQuantidades();
+    }
+    if (index === 1) {
+      zerarValores();
+    }
+    if (index === 2) {
+      desmarcarTodos();
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.botaoItensDaLista}
@@ -113,6 +203,33 @@ export default function ItensDaLista({navigation, route}) {
           <Icon name="plus-circle" size={20} color="#e02041" />
         </TouchableOpacity>
       </View>
+      <View />
+      <View style={{flexDirection: 'row', justifyContent: 'space-around'}}>
+        <Text style={styles.headerText}>Categoria</Text>
+        <Picker
+          style={{height: 50, width: '60%'}}
+          selectedValue={categoriaSelecionada}
+          onValueChange={(itemValue, itemIndex) =>
+            setCategoriaSelecionada(Number(itemValue))
+          }>
+          {categoriasList !== '' ? (
+            categoriasList.map((categoria) => (
+              <Picker.Item
+                key={categoria.id}
+                label={categoria.descricao}
+                value={categoria.id}
+              />
+            ))
+          ) : (
+            <Picker.Item label="Selecione uma categoria" value="0" />
+          )}
+        </Picker>
+        <PopUp
+          actions={['Zera quantidades', 'Zera valores', 'Desmarca todos']}
+          onPress={onPopupEvent}
+        />
+      </View>
+
       <FlatList
         style={styles.containerItens}
         data={itensDaLista}
@@ -183,6 +300,6 @@ export default function ItensDaLista({navigation, route}) {
           {listaSelecionada.total.toFixed(2)}
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
